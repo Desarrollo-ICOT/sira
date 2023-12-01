@@ -13,15 +13,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
-// Route::post('/entrance', 'CardReaderController@requestSessions')->name('entrance');
-// Route::post('exit', 'CardReaderController@readCardForExit');
+//  Route::any('/', 'CardReaderController@index')->name('index');
 
-Route::prefix('sessions')->group(function () {
-    Route::post('request', 'CardReaderController@requestSessions')->name('request');
-    Route::post('start', 'CardReaderController@startSession')->name('start');
-    Route::post('end', 'CardReaderController@endSession')->name('end');
-});
+Route::get('/', 'CardReaderController@index')->name('index');
+
+Route::post('request', 'CardReaderController@requestSessions')->name('request');

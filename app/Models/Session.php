@@ -11,14 +11,22 @@ class Session extends Model
 
     protected $fillable = 
     [
-        'card_number',
-        'session_datetime', 
-        'end_datetime',
+        'appr_id', //session id
+        //'patient_card_number',
+        'pati_clinical_history_id', //NHC
+        'pati_full_name', //patient name
+        'CENT_CODE', //centre code
+        'SERV_CODE', //service code
+        'appo_code', //codigo interno SINA
+        'fecha',
+        'hora_ini',
+        'hora_fin',
+        'loca_description_es',
+        'prof', //assigned professional
+        'Iniciado' ,
         'state',
-        'center_code'
+        'current_datetime'
     ];
-
-    protected $casts = ['datetime' => 'datetime', 'end_datetime' => 'datetime'];
 
     public function patient()
     {

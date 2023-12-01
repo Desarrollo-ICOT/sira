@@ -1,53 +1,60 @@
 @extends('layouts.app')
 
-@section('content')
-    <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
+@php
+    $healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
+    $healthCenterCode = file_get_contents($healthCenterCodePath);
+    $url = asset("assets/img/{$healthCenterCode}.jpg");
+    $requestRoute = route('request');
+@endphp
 
-    <div id="messageAlert" class="alert alert-success" role="alert" style="display: none">
-    </div>
-    <div id="errorMessageAlert" class="alert alert-danger" role="alert" style="display: none">
-    </div>
 
-    <div class="wrapper fadeInDown">
-        <style>
-            body {
-                background-image: linear-gradient(to right, #413E3E, #7B7575);
-                background-repeat: no-repeat;
-                background-size: cover;
-            }
-        </style>
-        <div class="formContent" style="background-color: transparent;box-shadow: 0 0 20px rgba(0, 0, 0, 1.3);">
-            <div class="fadeIn first">
-                <br>
-                <img src="{{ asset('assets/img/logo_nb.png') }}" width="40px" id="icon" alt="User Icon" /> <br><br>
-                <span class="font-weight-bold" style="font-size: 36px;font-family:"> ARES</span>
+    @section('content')
+        <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
+        <div class="wrapper fadeInDown">
+            <style>
+                /* body {
+                    background-image: url("{{ $url }}");
+                    background-size: auto;
+                    background-repeat: no-repeat;
+                    background-size: cover;
+                } */
+            </style>
+            <div id="messageAlert" class="alert" role="alert"
+                style="display: none;padding: 30px;font-size: 20px;    text-transform: uppercase;
+        ">
+            </div>
+            <div id="formContent" class="container">
+                <div class="card" style="background-color: transparent;box-shadow: 0 0 20px rgba(0, 0, 0, 1.3);">
+                    <div id="front" class="fadeIn first">
+                        <br>
+                        <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
+                        <p class="font-weight-bold" style="font-size: 38px;margin-top:200px;">
+                            ¡¡BIENVENIDO!!</p>
+                        <p class="font-weight-bold" style="font-size: 30px;">
+                            {{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
+                        <div id="clock" style="margin-bottom: 25px;"></div>
+                        <form class="mt-2" id="readCardForm" method="GET">
+                            @csrf
+                            @method('GET')
+                            {{-- <label for="card_code" style="font-weight: bold;">Paciente: </label> --}}
+                            <label id="patientCardLabel" class="data-label"></label>
+                            <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
+                                placeholder="Código Tarjeta">
+                            <br>
+                        </form>
+                    </div>
+                    <div class="back">
+                        BACK FACE CONTENT
+                    </div>
+                </div>
             </div>
 
-            <form class="mt-2" id="readCardForm" method="POST" action="{{ route('request') }}">
-                @csrf
-                @method('POST')
-                <label for="card_code">Tarjeta de Paciente: </label>
-                <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
-                    placeholder="Código Tarjeta">
-                <br>
-                {{-- <label for="center_code">Código de Centro:</label>
-                <input type="text" id="center_code" class="fadeIn second" name="center_code" value="1" required> --}}
-            </form>
         </div>
-    </div>
-@endsection
+    @endsection
 
-<script type="text/javascript">
-    const form = document.getElementById('readCardForm');
-    const cardCodeInput = document.getElementById('uid');
+    <script>
+        const requestRoute = "{{ $requestRoute }}";
+    </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('js/welcome.js') }}"></script>
 
-    cardCodeInput.addEventListener('input', () => {
-        if (cardCodeInput.value.trim() !== '') {
-            form.submit();
-        }
-    });
-    // function timeOutAlert($alert, $message) {
-    //     $alert.text($message);
-    //     $alert.show().delay(3000).slideUp(300);
-    // }
-</script>

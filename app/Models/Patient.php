@@ -12,7 +12,6 @@ class Patient extends Model
     protected $fillable = 
     [
         'card_number',
-        'name',
     ];
 
     public function sessions()
