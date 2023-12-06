@@ -14,14 +14,22 @@ class HospitalService
     private $post_url;
     private $healthCenterCodePath;
     private $healthCenterCode;
+    private $code;
+    private $backgroundImageUrl;
 
     public function __construct()
     {
         $this->get_url = env('GET_ENDPOINT');
         $this->post_url = env('POST_ENDPOINT');
         $this->healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
-        $this->healthCenterCode = 'HCDT';
+        $this->code =file_get_contents($this->healthCenterCodePath) ;
+        $this->healthCenterCode =trim($this->code) ;
+        $this->backgroundImageUrl = asset("assets/img/{$this->healthCenterCode}.jpg");
 
+    }
+
+    public function getImageUrl(){
+        return $this->backgroundImageUrl;
     }
 
     public function getTreatmentSessions(Request $request)
@@ -60,15 +68,15 @@ class HospitalService
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
             $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00O');
 
-          
-
             if ($sessionDate->isToday()) {
                 if (!$sessionData['sessions'][0]['started']) {
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
+                    // $sessionDate->setTimezone("EET");
+                    $currentDatetime = Carbon:: now();
                     $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00O');
                     // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
-                    $timeDifference = $now->diffInMinutes($timeToCheck);
+                    $timeDifference = $currentDatetime->diffInMinutes($timeToCheck);
                     if ($timeDifference < 15) {
                         throw new ApiException(env('TIME_ERROR'), 404);
                         // return response()->custom(true, env('TIME_ERROR'), 404, 'danger', $sessionData);

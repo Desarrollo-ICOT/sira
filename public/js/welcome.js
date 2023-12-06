@@ -3,6 +3,7 @@ $(document).ready(function() {
     $('#messageAlert').hide();
     const form = document.getElementById('readCardForm');
     const cardCodeInput = document.getElementById('uid');
+    const tokenInput = document.querySelector('#token');
     const messageAlert = document.getElementById('messageAlert');
     // const formContent = document.getElementById('formContent');
     const formContent = document.querySelector('#formContent');
@@ -13,11 +14,12 @@ $(document).ready(function() {
             url: requestRoute,
             type: 'POST',
             data: {
-                _token: '{{ csrf_token() }}',
+                _token: tokenInput.value.trim(),
                 uid: cardCodeInput.value.trim()
             },
             success: function(response) {
                 console.log(response);
+                console.log(cardCodeInput.value);
                 if (response.success) {
                     timeOutAlert($('#messageAlert'), response.message,
                         `alert-${response.led_color}`)
@@ -33,7 +35,7 @@ $(document).ready(function() {
                 }
             },
             error: function(error) {
-                console.error(error);
+                console.log(error);
                 timeOutAlert($('#messageAlert'), error.responseJSON.message,
                     `alert-${error.responseJSON.led_color}`);
                 playNotificationSound('/assets/sounds/error.mp3')

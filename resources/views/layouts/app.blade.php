@@ -1,9 +1,7 @@
-
-
 <html>
+
 <head>
     <!-- Scripts -->
-
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -18,16 +16,9 @@
 </head>
 
 <body>
-
     <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
+    @yield('content')
+    {{-- <script src="{{ asset('js/preload-images.js') }}"></script> --}}
+</body>
 
-    @section('sidebar')
-        @if (!Auth::guest())
-            
-            <!-- /#wrapper -->
-        @else
-            @yield('content')
-        @endif
-    </body>
-
-    </html>
+</html>

@@ -20,5 +20,6 @@ use Illuminate\Support\Facades\Route;
 //  Route::any('/', 'CardReaderController@index')->name('index');
 
 Route::get('/', 'CardReaderController@index')->name('index');
-
 Route::post('request', 'CardReaderController@requestSessions')->name('request');
+Route::get('/get-health-center-code', 'CardReaderController@getHealthCenterCode');
+
