@@ -4,49 +4,45 @@
     // $healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
     // $code = file_get_contents($healthCenterCodePath);
     // $healthCenterCode= trim($code);
-    // $url = asset("assets/img/{$healthCenterCode}.jpg");
+    $url = asset('assets/img/fondo.jpg');
     $requestRoute = route('request');
-    $imageUrl = ''; // Initialize the variable
+    $imageUrl = '';
 
 @endphp
 
 @section('content')
     <div class="wrapper fadeInDown">
         <style>
-             body {
-                            background-image: url("{{ $imageUrl }}");
-                            background-size: 800px 600px;
-                            background-repeat: no-repeat;
-                            background-size: cover;
-                        } 
+            body {
+                background-image: url("{{ $url }}");
+                background-repeat: no-repeat;
+                background-size: cover;
+            }
         </style>
         <div id="messageAlert" class="alert" role="alert"
             style="display: none;padding: 30px;font-size: 20px;    text-transform: uppercase;
         ">
         </div>
         <div id="formContent" class="container">
-            <div class="card" style="background-color: transparent;box-shadow: 0 0 20px rgba(0, 0, 0, 1.3);">
-                <div id="front" class="fadeIn first">
+            <div class="insideCard">
+                <div id="img1" class="img1">
+                    <img src="{{ asset('assets/img/logoblanco.png') }}" id="logo" alt="icot logo" />
+                </div>
+                <div class="img2">
+                    <img src="{{ asset('assets/img/34aniversario.png') }}" id="aniversario" alt="icot aniversario" />
+                </div>
+                <div class="datetime">
+                    <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
+                    <div id="clock"></div>
+                </div>
+                <form id="readCardForm" method="GET">
+                    @csrf
+                    @method('GET')
+                    <label id="patientCardLabel" class="data-label"></label>
+                    <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
+                        placeholder="Código Tarjeta">
                     <br>
-                    <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
-                    <p class="font-weight-bold" style="font-size: 38px;margin-top:200px;">
-                        ¡BIENVENIDO!</p>
-                    <p class="font-weight-bold" style="font-size: 30px;">
-                        {{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
-                    <div id="clock" style="margin-bottom: 25px;"></div>
-                    <form class="mt-2" id="readCardForm" method="GET">
-                        @csrf
-                        @method('GET')
-                        {{-- <label for="card_code" style="font-weight: bold;">Paciente: </label> --}}
-                        <label id="patientCardLabel" class="data-label"></label>
-                        <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
-                            placeholder="Código Tarjeta">
-                        <br>
-                    </form>
-                </div>
-                <div class="back">
-                    BACK FACE CONTENT
-                </div>
+                </form>
             </div>
         </div>
 
@@ -55,17 +51,13 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
-    // Set global variable to hold the image URL
+{{-- <script>
     window.imageUrl = "{{ $imageUrl }}";
 </script>
 
-<!-- Include preload-images.js -->
-<script src="{{ asset('js/preload-images.js') }}"></script>
+<script src="{{ asset('js/preload-images.js') }}"></script> --}}
 
 <script type="text/javascript">
-    // const requestRoute = "{{ $requestRoute }}";
-    // const token = "{{ csrf_token() }}";
     $(document).ready(function() {
         startClock();
         $('#messageAlert').hide();
@@ -73,8 +65,8 @@
         const cardCodeInput = document.getElementById('uid');
         const messageAlert = document.getElementById('messageAlert');
         const clock = document.getElementById('clock');
-        // const formContent = document.getElementById('formContent');
         const formContent = document.querySelector('#formContent');
+        cardCodeInput.focus();
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -94,6 +86,7 @@
                             `alert-${response.led_color}`)
                         $('#patientCardLabel').text(response.data.patient.name);
                         playNotificationSound('/assets/sounds/success.mp3');
+                        cardCodeInput.focus();
 
                     } else {
                         timeOutAlert($('#messageAlert'), response.message,
@@ -101,19 +94,23 @@
                         // messageAlert.classList.add(`alert-${response.led_color}`);
                         $('#sessionMessage').text(response.message);
                         playNotificationSound('/assets/sounds/error.mp3');
+                        cardCodeInput.focus();
+
                     }
                 },
                 error: function(error) {
                     console.log(error);
                     timeOutAlert($('#messageAlert'), error.responseJSON.message,
                         `alert-${error.responseJSON.led_color}`);
-                    playNotificationSound('/assets/sounds/error.mp3')
+                    playNotificationSound('/assets/sounds/error.mp3');
+                    cardCodeInput.focus();
 
                 },
                 complete: function() {
-                    // Code to be executed regardless of success or error
                     console.log('Ajax request completed');
                     setTimeout(clearPatientCardLabel, 10000);
+                    cardCodeInput.focus();
+
                 }
             });
         });

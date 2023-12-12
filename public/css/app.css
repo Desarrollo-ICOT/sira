@@ -79,6 +79,7 @@ body {
   color: #212529;
   text-align: left;
   background-color: #f8fafc;
+  
   /* background-image: url("{{ asset('assets/img/portada.jpg') }}");
   background-repeat: no-repeat;
   background-size: cover; */
@@ -218,9 +219,12 @@ figure {
   margin: 0 0 1rem;
 }
 
+
 img {
   vertical-align: middle;
   border-style: none;
+  max-width: 100%;
+  height: auto;
 }
 
 svg {
@@ -4954,7 +4958,7 @@ input[type=button].btn-block {
   background-clip: border-box;
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
-}
+} 
 
 .card > hr {
   margin-right: 0;
