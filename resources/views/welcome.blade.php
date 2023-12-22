@@ -35,10 +35,12 @@
                     <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
                     <div id="clock"></div>
                 </div>
+                <div id="patientLabel">
+                    <label id="patientCardLabel" class="data-label">Paciente: </label>
+                </div>
                 <form id="readCardForm" method="GET">
                     @csrf
                     @method('GET')
-                    <label id="patientCardLabel" class="data-label"></label>
                     <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
                         placeholder="Código Tarjeta">
                     <br>
@@ -60,6 +62,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         startClock();
+        $('#patientLabel').hide();
         $('#messageAlert').hide();
         const form = document.getElementById('readCardForm');
         const cardCodeInput = document.getElementById('uid');
@@ -67,24 +70,22 @@
         const clock = document.getElementById('clock');
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
-
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             $.ajax({
                 url: "{{ $requestRoute }}",
                 type: 'POST',
                 data: {
-                    // _token: tokenInput.value.trim(),
                     _token: "{{ csrf_token() }}",
                     uid: cardCodeInput.value.trim()
                 },
                 success: function(response) {
                     console.log(response);
-                    console.log(cardCodeInput.value);
                     if (response.success) {
                         timeOutAlert($('#messageAlert'), response.message,
                             `alert-${response.led_color}`)
-                        $('#patientCardLabel').text(response.data.patient.name);
+                        $('#patientCardLabel').text(response.patientName);
+                        $('#patientLabel').show();
                         playNotificationSound('/assets/sounds/success.mp3');
                         cardCodeInput.focus();
 
@@ -102,15 +103,16 @@
                     console.log(error);
                     timeOutAlert($('#messageAlert'), error.responseJSON.message,
                         `alert-${error.responseJSON.led_color}`);
+                    if (error.responseJSON.code != '001') {
+                        $('#patientCardLabel').text(error.responseJSON.patientName);
+                        $('#patientLabel').show();
+                    }
                     playNotificationSound('/assets/sounds/error.mp3');
                     cardCodeInput.focus();
-
                 },
                 complete: function() {
-                    console.log('Ajax request completed');
                     setTimeout(clearPatientCardLabel, 10000);
                     cardCodeInput.focus();
-
                 }
             });
         });
@@ -133,7 +135,7 @@
 
     function startClock() {
         updateClock();
-        setInterval(updateClock, 1000); // Update the clock every second
+        setInterval(updateClock, 1000);
     }
 
     function playNotificationSound($sound) {
@@ -146,7 +148,6 @@
         $('#uid').val('');
     }
 
-    // Function to toggle the flip animation
     function toggleFlip() {
         if (cardElement.style.transform === "rotateY(180deg)") {
             formContent.style.transform = "rotateY(0deg)";

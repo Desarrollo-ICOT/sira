@@ -36,18 +36,31 @@ class AppServiceProvider extends ServiceProvider
             return Http::withHeaders([
                 'authorization' => 'Bearer ' . $access_token,
                 'Ocp-Apim-Subscription-Key' => env('SUBSCRIPTION_KEY1')
-            ])->baseUrl( env('API_ENDPOINT').'/');
+            ])->baseUrl(env('API_ENDPOINT') . '/');
         });
 
-        Response:: macro('custom', function($success,$message , $status_code, $ledColor = null, $data = null){
-            $response = ['success' => $success, 'message' => $message];
-            if ($data) {
-                $response['data'] = $data;
+        Response::macro('custom', function ($success, $data, $status_code, $ledColor = null) {
+            $response ['success'] = $success;
+            if (is_array($data)) {
+                foreach ($data as $key => $value) {
+                    $response[$key] = $value;
+                }
+            } else {
+                $response = [
+                    'success' => $success,
+                    'message' => $data,
+                ];
             }
+
+            // if(isset( $data['patientName'])){
+            //     $response = [
+            //         'patientName' => $data['patientName'],
+            //     ];
+            // }
             if ($ledColor) {
                 $response['led_color'] = $ledColor;
             }
-            return response()-> json($response, $status_code);
+            return response()->json($response, $status_code);
         });
     }
 }

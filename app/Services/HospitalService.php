@@ -40,11 +40,21 @@ class HospitalService
         if (empty($sessions)) {
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {
-            $message = $sessions['content']['errors'][0]['message'];
-            throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
+            $messageText = $sessions['content']['errors'][0]['message'];
+            $message = substr($messageText, strpos($messageText, '-') + 2);
+            $code = substr($messageText, 0, 3);
+            $data = [
+                'message' => $message,
+                'code' => $code
+            ]; 
+            if(isset($sessions['content']['pacienteNombre']['patientFullName'])){
+                $data ['patientName'] =  $sessions['content']['pacienteNombre']['patientFullName'];
+            }
+            throw new ApiException($data,  $sessions['httpCode']);
         }
         return $this->processTreatmentSessions($sessions, $cardCode);
     }
+    
 
     private function fetchTreatmentSessions($cardCode)
     {
@@ -60,25 +70,29 @@ class HospitalService
 
     private function processTreatmentSessions($sessions, $cardCode)
     {
-        $now = Carbon::now()->setTimezone("EET");
+        $now = Carbon::now();
         foreach ($sessions['content']['treatments'] as $sessionData) {
             $sessionData['bandNumber'] = $cardCode;
             $sessionData['clinicalHistoryNumber'] = $sessions['content']['clinicalHistoryNumber'];
             $sessionData['name'] = $sessions['content']['patientFullName'];
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
-            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00O');
-
+            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             if ($sessionDate->isToday()) {
                 if (!$sessionData['sessions'][0]['started']) {
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
                     // $sessionDate->setTimezone("EET");
                     $currentDatetime = Carbon:: now();
-                    $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00O');
+                    // $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00');
                     // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
-                    $timeDifference = $currentDatetime->diffInMinutes($timeToCheck);
+                    $timeDifference = $currentDatetime->diffInMinutes($startDate);
                     if ($timeDifference < 15) {
-                        throw new ApiException(env('TIME_ERROR'), 404);
+                        $data = [
+                            'message' => env('TIME_ERROR'),
+                            'patientName' =>$sessions['content']['patientFullName']
+                        ]; 
+                        throw new ApiException($data, 404);
                         // return response()->custom(true, env('TIME_ERROR'), 404, 'danger', $sessionData);
                     } else {
                         $response = $this->markSessionAs($sessionData, env('STATE_DONE'));
@@ -143,10 +157,25 @@ class HospitalService
             throw new ApiException('Fallo al ' . strtolower($successMessage) . ': ' . $response, 500);
             exec('/assets/sounds/error.mp3');
         } else if (!empty($sessions['error'])) {
-            $message = $sessions['content']['errors'][0]['message'];
-            throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
+            $messageText = $sessions['content']['errors'][0]['message'];
+            $message = substr($messageText, strpos($messageText, '-') + 2);
+            $code = substr($messageText, 0, 3);
+            $patientName = $sessions['content']['pacienteNombre']['patientFullName']; 
+            $data = [
+                'message' => $message,
+                'code' => $code,
+                'patientName' => $patientName
+            ]; 
+            throw new ApiException($data,  $sessions['httpCode']);
+            // $message = $sessions['content']['errors'][0]['message'];
+            // throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
             exec('/assets/sounds/error.mp3');
         }
-        return response()->custom(true, $successMessage, 200, 'success', $data);
+        $sessionData =[
+            'message'=> $successMessage,
+            'patientName' => $data['patient']['name']
+
+        ];
+        return response()->custom(true, $sessionData, 200, 'success');
     }
 }
