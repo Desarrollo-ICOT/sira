@@ -11,11 +11,9 @@ class ErrorHandler
     public static function handle(Exception $e)
     {
         Log::channel('paco')->info($e->getMessage());
-
         if ($e instanceof ApiException) {
             return response()->custom(false, $e->getData(), $e->getHttpCode(), 'danger');
         }
-
         return response()->custom(false, $e->getMessage(), 500, 'danger');
     }
 }

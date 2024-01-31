@@ -63,8 +63,10 @@ class HospitalService
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {
+            session()->put('error', $response);
             throw new ApiException(env('SINA_ERROR'), 500);
         }
+        session()->put('success', $response);
         return $response->json() ?? [];
     }
 

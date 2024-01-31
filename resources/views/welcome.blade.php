@@ -4,7 +4,7 @@
     // $healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
     // $code = file_get_contents($healthCenterCodePath);
     // $healthCenterCode= trim($code);
-    $url = asset('assets/img/fondo.jpg');
+    $url = asset('assets/img/fondo_gris.jpg');
     $requestRoute = route('request');
     $imageUrl = '';
 
@@ -19,24 +19,27 @@
                 background-size: cover;
             }
         </style>
-        <div id="messageAlert" class="alert" role="alert"
-            style="display: none;padding: 30px;font-size: 20px;    text-transform: uppercase;
-        ">
+
+        <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
+                <img src="{{ asset('assets/img/alarm-unscreen.gif') }}" alt="Animated Forbidden Icon">
         </div>
+        <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
+        </div>
+
         <div id="formContent" class="container">
             <div class="insideCard">
                 <div id="img1" class="img1">
-                    <img src="{{ asset('assets/img/logoblanco.png') }}" id="logo" alt="icot logo" />
+                    <img src="{{ asset('assets/img/logo_icot.png') }}" id="logo" alt="icot logo" />
                 </div>
                 <div class="img2">
-                    <img src="{{ asset('assets/img/34aniversario.png') }}" id="aniversario" alt="icot aniversario" />
+                    <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
                 </div>
                 <div class="datetime">
                     <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
                     <div id="clock"></div>
                 </div>
                 <div id="patientLabel">
-                    <label id="patientCardLabel" class="data-label">Paciente: </label>
+                    <label id="patientCardLabel" class="data-label"></label>
                 </div>
                 <form id="readCardForm" method="GET">
                     @csrf
@@ -81,18 +84,16 @@
                 },
                 success: function(response) {
                     console.log(response);
-                    if (response.success) {
-                        timeOutAlert($('#messageAlert'), response.message,
-                            `alert-${response.led_color}`)
+                    if (response.success == true) {
+                        timeOutAlert($('#alertSuccess'), response.message);
                         $('#patientCardLabel').text(response.patientName);
                         $('#patientLabel').show();
                         playNotificationSound('/assets/sounds/success.mp3');
                         cardCodeInput.focus();
 
                     } else {
-                        timeOutAlert($('#messageAlert'), response.message,
-                            `alert-${response.led_color}`)
-                        // messageAlert.classList.add(`alert-${response.led_color}`);
+                        console.log(error);
+                        timeOutAlert($('#alertError'), response.message);
                         $('#sessionMessage').text(response.message);
                         playNotificationSound('/assets/sounds/error.mp3');
                         cardCodeInput.focus();
@@ -101,8 +102,7 @@
                 },
                 error: function(error) {
                     console.log(error);
-                    timeOutAlert($('#messageAlert'), error.responseJSON.message,
-                        `alert-${error.responseJSON.led_color}`);
+                    timeOutAlert($('#alertError'), error.responseJSON.message);
                     if (error.responseJSON.code != '001') {
                         $('#patientCardLabel').text(error.responseJSON.patientName);
                         $('#patientLabel').show();
@@ -118,9 +118,9 @@
         });
     });
 
-    function timeOutAlert($alert, $message, $class) {
+    function
+    timeOutAlert($alert, $message) {
         $alert.text($message);
-        $alert.addClass($class);
         $alert.show().delay(10000).slideUp(300);
     }
 

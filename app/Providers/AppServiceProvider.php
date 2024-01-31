@@ -51,12 +51,6 @@ class AppServiceProvider extends ServiceProvider
                     'message' => $data,
                 ];
             }
-
-            // if(isset( $data['patientName'])){
-            //     $response = [
-            //         'patientName' => $data['patientName'],
-            //     ];
-            // }
             if ($ledColor) {
                 $response['led_color'] = $ledColor;
             }

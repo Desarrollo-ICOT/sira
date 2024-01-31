@@ -10,7 +10,7 @@
 
     p {
         font-weight: bold;
-        color: whitesmoke;
+        color: #bc012e;
         font-size: 22px;
     }
 
@@ -38,7 +38,7 @@
         background-size: cover;
     }
 
-    .data-label{
+    .data-label {
         font-size: 2.5vw;
         font-weight: bold;
         color: #0d0d0d;
@@ -54,8 +54,10 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 1.5vw;
-
+        font-size: 3vw;
+        /* display: none;
+        padding: 30px; */
+        text-transform: uppercase;
     }
 
     a {
@@ -109,7 +111,7 @@
         -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
         /* box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3); */
         text-align: center;
-        background-color: #bc012e;
+        background-color: transparent !important;
         box-shadow: 0 0 20px rgba(0, 0, 0, 1.3);
     }
 
@@ -142,7 +144,7 @@
     #clock {
         font-size: 18px;
         font-weight: bold;
-        color: whitesmoke;
+        color: #bc012e;
     }
 
     .container {
@@ -263,6 +265,9 @@
     input[type=text]:focus {
         background-color: #fff;
         border-bottom: 2px solid grey;
+        border-top: 2px solid grey;
+        border-left: 2px solid grey;
+        border-right: 2px solid grey;
     }
 
     input[type=text]:placeholder {
@@ -458,17 +463,26 @@
     .alert {
         height: 100px;
         width: 360px;
+        font-size: 1.5vw;
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: large;
+        font-size: 3vw;
+        /* display: none;
+        padding: 30px; */
+        text-transform: uppercase;
 
     }
 
     .alert-success {
-        color: #1d643b;
-        background-color: #d7f3e3;
+        color: whitesmoke;
+        background-color: green;
         border-color: #c7eed8;
     }
 
@@ -481,8 +495,8 @@
     }
 
     .alert-danger {
-        color: #761b18;
-        background-color: #f9d6d5;
+        color: whitesmoke;
+        background-color: red;
         border-color: #f7c6c5;
     }
 
@@ -521,7 +535,7 @@
     #logo {
         animation: moveUpDown 7s linear infinite;
         height: 80px;
-        width: 120px;
+        width: 110px;
     }
 
     #aniversario {
@@ -538,6 +552,12 @@
         transform: translate(-50%, -50%);
         opacity: 1;
     }
+}
+
+.icon img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
 }
 
 /* 
