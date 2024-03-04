@@ -19,6 +19,7 @@
                 background-size: cover;
             }
         </style>
+
         <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
         </div>
         <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
@@ -26,11 +27,10 @@
 
         <div id="formContent" class="container">
             <div class="insideCard">
-
                 <div id="img1" class="img1">
                     <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
                 </div>
-                <div id="img2" class="img2">
+                <div class="img2">
                     <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
                 </div>
                 <div class="datetime">
@@ -72,7 +72,6 @@
         const clock = document.getElementById('clock');
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
-
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             $.ajax({
@@ -83,50 +82,26 @@
                     uid: cardCodeInput.value.trim()
                 },
                 success: function(response) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(response.message),
-                        text: response.patientName,
-                        icon: 'success',
-                        type: 'success',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-
-                    });
                     console.log(response);
                     if (response.success == true) {
+                        timeOutAlert($('#alertSuccess'), response.message);
                         $('#patientCardLabel').text(response.patientName);
                         $('#patientLabel').show();
                         playNotificationSound('/assets/sounds/success.mp3');
                         cardCodeInput.focus();
 
                     } else {
-                        Swal.fire({
-                            title: capitalizeFirstLetter(response.message),
-                            text: response.patientName,
-                            icon: 'error',
-                            type: 'error',
-                            timer: 6000,
-                            showConfirmButton: false,
-                            footer: ' ',
-
-                        });
                         console.log(error);
+                        timeOutAlert($('#alertError'), response.message);
+                        $('#sessionMessage').text(response.message);
                         playNotificationSound('/assets/sounds/error.mp3');
                         cardCodeInput.focus();
+
                     }
                 },
                 error: function(error) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(error.responseJSON.message) ,
-                        text: error.responseJSON.patientName,
-                        icon: 'error',
-                        type: 'error',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-                    });
                     console.log(error);
+                    timeOutAlert($('#alertError'), error.responseJSON.message);
                     if (error.responseJSON.code != '001') {
                         $('#patientCardLabel').text(error.responseJSON.patientName);
                         $('#patientLabel').show();
@@ -172,9 +147,12 @@
         $('#uid').val('');
     }
 
-    function capitalizeFirstLetter(str) {
-        console.log('holi');
-        return str.replace(/\b\w/g, match => match.toUpperCase());
+    function toggleFlip() {
+        if (cardElement.style.transform === "rotateY(180deg)") {
+            formContent.style.transform = "rotateY(0deg)";
+        } else {
+            formContent.style.transform = "rotateY(180deg)";
+        }
     }
 </script>
 {{-- <script src="{{ asset('js/welcome.js') }}"></script> --}}

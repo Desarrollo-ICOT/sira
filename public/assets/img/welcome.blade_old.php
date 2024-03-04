@@ -7,7 +7,6 @@
     $url = asset('assets/img/fondo_gris.jpg');
     $requestRoute = route('request');
     $imageUrl = '';
-
 @endphp
 
 @section('content')
@@ -19,19 +18,15 @@
                 background-size: cover;
             }
         </style>
-        <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
+        <div id="messageAlert" class="alert" role="alert">
         </div>
-        <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
-        </div>
-
         <div id="formContent" class="container">
             <div class="insideCard">
-
                 <div id="img1" class="img1">
-                    <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
+                    <img src="{{ asset('assets/img/logoblanco.png') }}" id="logo" alt="icot logo" />
                 </div>
-                <div id="img2" class="img2">
-                    <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
+                <div class="img2">
+                    <img src="{{ asset('assets/img/34aniversario.png') }}" id="aniversario" alt="icot aniversario" />
                 </div>
                 <div class="datetime">
                     <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
@@ -72,7 +67,6 @@
         const clock = document.getElementById('clock');
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
-
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             $.ajax({
@@ -83,50 +77,29 @@
                     uid: cardCodeInput.value.trim()
                 },
                 success: function(response) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(response.message),
-                        text: response.patientName,
-                        icon: 'success',
-                        type: 'success',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-
-                    });
                     console.log(response);
-                    if (response.success == true) {
+                    if (response.success) {
+                        timeOutAlert($('#messageAlert'), response.message,
+                            `alert-${response.led_color}`)
                         $('#patientCardLabel').text(response.patientName);
                         $('#patientLabel').show();
                         playNotificationSound('/assets/sounds/success.mp3');
                         cardCodeInput.focus();
 
                     } else {
-                        Swal.fire({
-                            title: capitalizeFirstLetter(response.message),
-                            text: response.patientName,
-                            icon: 'error',
-                            type: 'error',
-                            timer: 6000,
-                            showConfirmButton: false,
-                            footer: ' ',
-
-                        });
-                        console.log(error);
+                        timeOutAlert($('#messageAlert'), response.message,
+                            `alert-${response.led_color}`)
+                        // messageAlert.classList.add(`alert-${response.led_color}`);
+                        $('#sessionMessage').text(response.message);
                         playNotificationSound('/assets/sounds/error.mp3');
                         cardCodeInput.focus();
+
                     }
                 },
                 error: function(error) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(error.responseJSON.message) ,
-                        text: error.responseJSON.patientName,
-                        icon: 'error',
-                        type: 'error',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-                    });
                     console.log(error);
+                    timeOutAlert($('#messageAlert'), error.responseJSON.message,
+                        `alert-${error.responseJSON.led_color}`);
                     if (error.responseJSON.code != '001') {
                         $('#patientCardLabel').text(error.responseJSON.patientName);
                         $('#patientLabel').show();
@@ -142,9 +115,9 @@
         });
     });
 
-    function
-    timeOutAlert($alert, $message) {
+    function timeOutAlert($alert, $message, $class) {
         $alert.text($message);
+        $alert.addClass($class);
         $alert.show().delay(10000).slideUp(300);
     }
 
@@ -172,9 +145,12 @@
         $('#uid').val('');
     }
 
-    function capitalizeFirstLetter(str) {
-        console.log('holi');
-        return str.replace(/\b\w/g, match => match.toUpperCase());
+    function toggleFlip() {
+        if (cardElement.style.transform === "rotateY(180deg)") {
+            formContent.style.transform = "rotateY(0deg)";
+        } else {
+            formContent.style.transform = "rotateY(180deg)";
+        }
     }
 </script>
 {{-- <script src="{{ asset('js/welcome.js') }}"></script> --}}

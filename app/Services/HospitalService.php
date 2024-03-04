@@ -6,6 +6,8 @@ use App\Exceptions\ApiException;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use RealRashid\SweetAlert\Facades\Alert;
+
 
 class HospitalService
 {
@@ -63,10 +65,8 @@ class HospitalService
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {
-            session()->put('error', $response);
             throw new ApiException(env('SINA_ERROR'), 500);
         }
-        session()->put('success', $response);
         return $response->json() ?? [];
     }
 
