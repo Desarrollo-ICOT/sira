@@ -34,11 +34,17 @@ class HospitalService
         return $this->backgroundImageUrl;
     }
 
+    // public function getCenterCode(){
+    //     $healthCenterCode = localStorage.getItem('healthCenterCode');
+
+    // }
+
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
+        $healthCenterCode = $request->input('healthCenterCode');
         // $centerCode = env('CENTER_CODE');
-        $sessions = $this->fetchTreatmentSessions($cardCode);
+        $sessions = $this->fetchTreatmentSessions($cardCode, $healthCenterCode);
         if (empty($sessions)) {
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {
@@ -58,10 +64,10 @@ class HospitalService
     }
     
 
-    private function fetchTreatmentSessions($cardCode)
+    private function fetchTreatmentSessions($cardCode, $healthCenterCode)
     {
         $response = Http::get($this->get_url, [
-            'centerCode' => $this->healthCenterCode,
+            'centerCode' => $healthCenterCode,
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {

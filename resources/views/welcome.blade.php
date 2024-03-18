@@ -73,6 +73,9 @@
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
 
+        var healthCenterCode = localStorage.getItem('healthCenterCode');
+        console.log(healthCenterCode);
+
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             $.ajax({
@@ -80,7 +83,8 @@
                 type: 'POST',
                 data: {
                     _token: "{{ csrf_token() }}",
-                    uid: cardCodeInput.value.trim()
+                    uid: cardCodeInput.value.trim(),
+                    healthCenterCode: healthCenterCode
                 },
                 success: function(response) {
                     Swal.fire({
@@ -173,7 +177,6 @@
     }
 
     function capitalizeFirstLetter(str) {
-        console.log('holi');
         return str.replace(/\b\w/g, match => match.toUpperCase());
     }
 </script>
