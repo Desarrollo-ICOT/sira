@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\Center;
 
 
 class HospitalService
@@ -42,7 +43,8 @@ class HospitalService
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
-        $healthCenterCode = $request->input('healthCenterCode');
+        $deviceIP = $request->input('healthCenterCode');
+        $healthCenterCode = Center::getCodeByDeviceIP($deviceIP);
         // $centerCode = env('CENTER_CODE');
         $sessions = $this->fetchTreatmentSessions($cardCode, $healthCenterCode);
         if (empty($sessions)) {
@@ -91,7 +93,7 @@ class HospitalService
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
                     // $sessionDate->setTimezone("EET");
-                    $currentDatetime = Carbon:: now();
+                    $currentDatetime = Carbon::now();
                     // $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00');
                     // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
                     $timeDifference = $currentDatetime->diffInMinutes($startDate);
