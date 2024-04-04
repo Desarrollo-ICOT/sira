@@ -73,74 +73,93 @@
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            $.ajax({
-                url: "{{ $requestRoute }}",
-                type: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    uid: cardCodeInput.value.trim()
-                },
-                success: function(response) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(response.message),
-                        text: response.patientName,
-                        icon: 'success',
-                        type: 'success',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
+        // var healthCenterCode = localStorage.getItem('healthCenterCode');
+        // console.log(healthCenterCode);
+        getClientIP(function(clientIP) {
+            console.log(clientIP);
 
-                    });
-                    console.log(response);
-                    if (response.success == true) {
-                        $('#patientCardLabel').text(response.patientName);
-                        $('#patientLabel').show();
-                        playNotificationSound('/assets/sounds/success.mp3');
-                        cardCodeInput.focus();
-
-                    } else {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: "{{ $requestRoute }}",
+                    type: 'POST',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        uid: cardCodeInput.value.trim(),
+                        healthCenterCode: clientIP
+                    },
+                    success: function(response) {
                         Swal.fire({
-                            title: capitalizeFirstLetter(response.message),
+                            title: response.message,
                             text: response.patientName,
-                            icon: 'error',
-                            type: 'error',
+                            icon: 'success',
+                            type: 'success',
                             timer: 6000,
                             showConfirmButton: false,
                             footer: ' ',
 
                         });
+                        console.log(response);
+                        if (response.success == true) {
+                            $('#patientCardLabel').text(response.patientName);
+                            $('#patientLabel').show();
+                            playNotificationSound('/assets/sounds/success.mp3');
+                            cardCodeInput.focus();
+
+                        } else {
+                            Swal.fire({
+                                title: response
+                                    .message,
+                                text: response.patientName,
+                                icon: 'error',
+                                type: 'error',
+                                timer: 6000,
+                                showConfirmButton: false,
+                                footer: ' ',
+
+                            });
+                            console.log(error);
+                            playNotificationSound('/assets/sounds/error.mp3');
+                            cardCodeInput.focus();
+                        }
+                    },
+                    error: function(error) {
+                        Swal.fire({
+                            title: error.responseJSON
+                                .message,
+                            text: error.responseJSON.patientName,
+                            icon: 'error',
+                            type: 'error',
+                            timer: 6000,
+                            showConfirmButton: false,
+                            footer: ' ',
+                        });
                         console.log(error);
+                        if (error.responseJSON.code != '001') {
+                            $('#patientCardLabel').text(error.responseJSON
+                                .patientName);
+                            $('#patientLabel').show();
+                        }
                         playNotificationSound('/assets/sounds/error.mp3');
                         cardCodeInput.focus();
+                    },
+                    complete: function() {
+                        setTimeout(clearPatientCardLabel, 10000);
+                        cardCodeInput.focus();
                     }
-                },
-                error: function(error) {
-                    Swal.fire({
-                        title: capitalizeFirstLetter(error.responseJSON.message) ,
-                        text: error.responseJSON.patientName,
-                        icon: 'error',
-                        type: 'error',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-                    });
-                    console.log(error);
-                    if (error.responseJSON.code != '001') {
-                        $('#patientCardLabel').text(error.responseJSON.patientName);
-                        $('#patientLabel').show();
-                    }
-                    playNotificationSound('/assets/sounds/error.mp3');
-                    cardCodeInput.focus();
-                },
-                complete: function() {
-                    setTimeout(clearPatientCardLabel, 10000);
-                    cardCodeInput.focus();
-                }
+                });
             });
         });
+
+
     });
+
+    // Function to get the client's IP address
+    function getClientIP(callback) {
+        $.getJSON('https://api.ipify.org?format=json', function(data) {
+            callback(data.ip);
+        });
+    }
 
     function
     timeOutAlert($alert, $message) {
@@ -173,7 +192,6 @@
     }
 
     function capitalizeFirstLetter(str) {
-        console.log('holi');
         return str.replace(/\b\w/g, match => match.toUpperCase());
     }
 </script>

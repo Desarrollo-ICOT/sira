@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\Center;
 
 
 class HospitalService
@@ -34,11 +35,18 @@ class HospitalService
         return $this->backgroundImageUrl;
     }
 
+    // public function getCenterCode(){
+    //     $healthCenterCode = localStorage.getItem('healthCenterCode');
+
+    // }
+
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
+        $deviceIP = $request->input('healthCenterCode');
+        $healthCenterCode = Center::getCodeByDeviceIP($deviceIP);
         // $centerCode = env('CENTER_CODE');
-        $sessions = $this->fetchTreatmentSessions($cardCode);
+        $sessions = $this->fetchTreatmentSessions($cardCode, $healthCenterCode);
         if (empty($sessions)) {
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {
@@ -58,10 +66,10 @@ class HospitalService
     }
     
 
-    private function fetchTreatmentSessions($cardCode)
+    private function fetchTreatmentSessions($cardCode, $healthCenterCode)
     {
         $response = Http::get($this->get_url, [
-            'centerCode' => $this->healthCenterCode,
+            'centerCode' => $healthCenterCode,
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {
@@ -85,7 +93,7 @@ class HospitalService
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
                     // $sessionDate->setTimezone("EET");
-                    $currentDatetime = Carbon:: now();
+                    $currentDatetime = Carbon::now();
                     // $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00');
                     // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
                     $timeDifference = $currentDatetime->diffInMinutes($startDate);

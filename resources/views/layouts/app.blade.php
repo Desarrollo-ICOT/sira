@@ -59,6 +59,8 @@
 
     <title>SIRA</title>
 
+    @laravelPWA
+
 </head>
 
 <body>
