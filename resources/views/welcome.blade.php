@@ -1,9 +1,7 @@
 @extends('layouts.app')
 
 @php
-    // $healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
-    // $code = file_get_contents($healthCenterCodePath);
-    // $healthCenterCode= trim($code);
+
     $url = asset('assets/img/fondo_gris.jpg');
     $requestRoute = route('request');
     $imageUrl = '';
@@ -54,13 +52,6 @@
 @endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-{{-- <script>
-    window.imageUrl = "{{ $imageUrl }}";
-</script>
-
-<script src="{{ asset('js/preload-images.js') }}"></script> --}}
-
 <script type="text/javascript">
     $(document).ready(function() {
         startClock();
@@ -73,88 +64,81 @@
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
 
-        // var healthCenterCode = localStorage.getItem('healthCenterCode');
-        // console.log(healthCenterCode);
-        getClientIP(function(clientIP) {
-            console.log(clientIP);
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            $.ajax({
+                url: "{{ $requestRoute }}",
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                data: {
+                    uid: cardCodeInput.value.trim()
+                },
+                success: function(response) {
+                    Swal.fire({
+                        title: response.message,
+                        text: response.patientName,
+                        icon: 'success',
+                        type: 'success',
+                        timer: 6000,
+                        showConfirmButton: false,
+                        footer: ' ',
 
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                $.ajax({
-                    url: "{{ $requestRoute }}",
-                    type: 'POST',
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        uid: cardCodeInput.value.trim(),
-                        healthCenterCode: clientIP
-                    },
-                    success: function(response) {
+                    });
+                    console.log(response);
+                    if (response.success == true) {
+                        $('#patientCardLabel').text(response.patientName);
+                        $('#patientLabel').show();
+                        playNotificationSound('/assets/sounds/success.mp3');
+                        cardCodeInput.focus();
+
+                    } else {
                         Swal.fire({
-                            title: response.message,
-                            text: response.patientName,
-                            icon: 'success',
-                            type: 'success',
-                            timer: 6000,
-                            showConfirmButton: false,
-                            footer: ' ',
-
-                        });
-                        console.log(response);
-                        if (response.success == true) {
-                            $('#patientCardLabel').text(response.patientName);
-                            $('#patientLabel').show();
-                            playNotificationSound('/assets/sounds/success.mp3');
-                            cardCodeInput.focus();
-
-                        } else {
-                            Swal.fire({
-                                title: response
-                                    .message,
-                                text: response.patientName,
-                                icon: 'error',
-                                type: 'error',
-                                timer: 6000,
-                                showConfirmButton: false,
-                                footer: ' ',
-
-                            });
-                            console.log(error);
-                            playNotificationSound('/assets/sounds/error.mp3');
-                            cardCodeInput.focus();
-                        }
-                    },
-                    error: function(error) {
-                        Swal.fire({
-                            title: error.responseJSON
+                            title: response
                                 .message,
-                            text: error.responseJSON.patientName,
+                            text: response.patientName,
                             icon: 'error',
                             type: 'error',
                             timer: 6000,
                             showConfirmButton: false,
                             footer: ' ',
+
                         });
-                        console.log(error);
-                        if (error.responseJSON.code != '001') {
-                            $('#patientCardLabel').text(error.responseJSON
-                                .patientName);
-                            $('#patientLabel').show();
-                        }
                         playNotificationSound('/assets/sounds/error.mp3');
                         cardCodeInput.focus();
-                    },
-                    complete: function() {
-                        setTimeout(clearPatientCardLabel, 10000);
-                        cardCodeInput.focus();
                     }
-                });
+                },
+                error: function(error) {
+                    Swal.fire({
+                        title: error.responseJSON
+                            .message,
+                        text: error.responseJSON.patientName,
+                        icon: 'error',
+                        type: 'error',
+                        timer: 6000,
+                        showConfirmButton: false,
+                        footer: ' ',
+                    });
+
+                    if (error.responseJSON.code != '001') {
+                        $('#patientCardLabel').text(error.responseJSON
+                            .patientName);
+                        $('#patientLabel').show();
+                    }
+                    playNotificationSound('/assets/sounds/error.mp3');
+                    cardCodeInput.focus();
+                },
+                complete: function() {
+                    setTimeout(clearPatientCardLabel, 4000);
+                    cardCodeInput.focus();
+                }
             });
         });
 
-
     });
 
-    // Function to get the client's IP address
+    // Function to get the client's public IP address
     function getClientIP(callback) {
         $.getJSON('https://api.ipify.org?format=json', function(data) {
             callback(data.ip);
@@ -195,4 +179,3 @@
         return str.replace(/\b\w/g, match => match.toUpperCase());
     }
 </script>
-{{-- <script src="{{ asset('js/welcome.js') }}"></script> --}}

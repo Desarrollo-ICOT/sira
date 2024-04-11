@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\Center;
+use Illuminate\Support\Facades\Log;
 
 
 class HospitalService
@@ -35,18 +36,21 @@ class HospitalService
         return $this->backgroundImageUrl;
     }
 
-    // public function getCenterCode(){
-    //     $healthCenterCode = localStorage.getItem('healthCenterCode');
-
-    // }
+    public function getClientIP(Request $request){
+        $clientIp = $request->ip();
+        Log::channel('paco')->info('Client IP Address: ' . $clientIp);
+        return $clientIp;
+    }
 
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
-        $deviceIP = $request->input('healthCenterCode');
-        $healthCenterCode = Center::getCodeByDeviceIP($deviceIP);
-        // $centerCode = env('CENTER_CODE');
-        $sessions = $this->fetchTreatmentSessions($cardCode, $healthCenterCode);
+        // $deviceIP = $request->input('healthCenterCode');
+        $anotherDeviceIP = $this->getClientIP($request);
+        $anotherHealthCenterCode =Center::getCodeByDevicePrivateIP($anotherDeviceIP);
+        Log::channel('paco')->info('Health Center Code: ' . $anotherHealthCenterCode);
+        // $healthCenterCode = Center::getCodeByDeviceIP($deviceIP);
+        $sessions = $this->fetchTreatmentSessions($cardCode, $anotherHealthCenterCode);
         if (empty($sessions)) {
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {

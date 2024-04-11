@@ -119,6 +119,11 @@ return [
             'path' => storage_path('logs/paco.log'),
             'level' => 'debug',
         ],
+        'error' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/error.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

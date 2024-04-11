@@ -32,10 +32,6 @@ class CardReaderController extends Controller
 
         ));
     }
-
-    public function getHealthCenterCode(){
-        return $this->hospitalSvc->getImageUrl();
-    }
     
     public function requestSessions(Request $request)
     {

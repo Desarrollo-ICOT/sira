@@ -23,4 +23,12 @@ class Center extends Model
         }
         return null;
     }
+    public static function getCodeByDevicePrivateIP($ip)
+    {
+        $device = Device::where('ipprivada', $ip)->first();
+        if ($device) {
+            return $device->center->code;
+        }
+        return null;
+    }
 }
