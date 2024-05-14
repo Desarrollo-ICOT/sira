@@ -66,6 +66,8 @@
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
+            $('#uid').prop('disabled', true);
+
             $.ajax({
                 url: "{{ $requestRoute }}",
                 type: 'POST',
@@ -76,67 +78,116 @@
                     uid: cardCodeInput.value.trim()
                 },
                 success: function(response) {
-                    Swal.fire({
-                        title: response.message,
-                        text: response.patientName,
-                        icon: 'success',
-                        type: 'success',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-
-                    });
-                    console.log(response);
-                    if (response.success == true) {
-                        $('#patientCardLabel').text(response.patientName);
-                        $('#patientLabel').show();
-                        playNotificationSound('/assets/sounds/success.mp3');
-                        cardCodeInput.focus();
-
-                    } else {
-                        Swal.fire({
-                            title: response
-                                .message,
-                            text: response.patientName,
-                            icon: 'error',
-                            type: 'error',
-                            timer: 6000,
-                            showConfirmButton: false,
-                            footer: ' ',
-
-                        });
-                        playNotificationSound('/assets/sounds/error.mp3');
-                        cardCodeInput.focus();
-                    }
+                    handleResponse(response);
+                    cardCodeInput.focus();
                 },
                 error: function(error) {
-                    Swal.fire({
-                        title: error.responseJSON
-                            .message,
-                        text: error.responseJSON.patientName,
-                        icon: 'error',
-                        type: 'error',
-                        timer: 6000,
-                        showConfirmButton: false,
-                        footer: ' ',
-                    });
-
-                    if (error.responseJSON.code != '001') {
-                        $('#patientCardLabel').text(error.responseJSON
-                            .patientName);
-                        $('#patientLabel').show();
+                    if (error.status === 419) {
+                        // CSRF token mismatch error
+                        refreshCsrfTokenAndRetry(form);
+                    } else {
+                        handleErrorResponse(error.responseJSON);
+                        cardCodeInput.focus();
                     }
-                    playNotificationSound('/assets/sounds/error.mp3');
-                    cardCodeInput.focus();
                 },
                 complete: function() {
-                    setTimeout(clearPatientCardLabel, 4000);
-                    cardCodeInput.focus();
+                    // Re-enable input field after setTimeout and clearing patient card label
+                    setTimeout(function() {
+                        clearPatientCardLabel();
+                        $('#uid').prop('disabled', false); // Re-enable input field
+                        cardCodeInput.focus();
+                    }, 4000);
                 }
             });
         });
 
+
+
     });
+
+    function handleResponse(response) {
+        Swal.fire({
+            title: response.message,
+            text: response.patientName,
+            icon: 'success',
+            type: 'success',
+            timer: 3000,
+            showConfirmButton: false,
+            footer: ' ',
+        });
+        if (response.success == true) {
+            $('#patientCardLabel').text(response.patientName);
+            $('#patientLabel').show();
+            playNotificationSound('/assets/sounds/success.mp3');
+            // cardCodeInput.focus();
+        } else {
+            handleErrorResponse(response);
+            // cardCodeInput.focus();
+        }
+    }
+
+    function handleErrorResponse(response) {
+        Swal.fire({
+            title: response.message,
+            text: response.cardCode,
+            icon: 'error',
+            type: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+            footer: ' ',
+        });
+        playNotificationSound('/assets/sounds/error.mp3');
+        if (response.code && response.code != '001') {
+            $('#patientCardLabel').text(response.patientName);
+            $('#patientLabel').show();
+        }
+    }
+
+    function refreshCsrfTokenAndRetry(form) {
+        refreshCsrfToken()
+            .then(function() {
+                // Retry original AJAX request after token refresh
+                $.ajax(form.submit());
+            })
+            .catch(function(error) {
+                console.error('Failed to refresh CSRF token:');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to refresh CSRF token',
+                    icon: 'error',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    footer: ' ',
+                });
+            });
+    }
+
+
+    function refreshCsrfToken() {
+        return new Promise((resolve, reject) => {
+            $.get('/refresh-csrf-token')
+                .done(function(response) {
+                    const newCsrfToken = response.csrf_token;
+                    // Update CSRF token in the headers of future requests
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': newCsrfToken
+                        }
+                    });
+                    resolve();
+                })
+                .fail(function(error) {
+                    reject(error);
+                });
+        });
+    }
+
+    function simulateCsrfTokenMismatch() {
+        $.get('/simulate-csrf-token-mismatch')
+            .fail(function(error) {
+                console.error('Failed to simulate CSRF token mismatch:');
+            });
+    }
 
     // Function to get the client's public IP address
     function getClientIP(callback) {
@@ -145,8 +196,7 @@
         });
     }
 
-    function
-    timeOutAlert($alert, $message) {
+    function timeOutAlert($alert, $message) {
         $alert.text($message);
         $alert.show().delay(10000).slideUp(300);
     }

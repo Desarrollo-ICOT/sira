@@ -27,3 +27,13 @@ Route::get('/', 'CardReaderController@index')->name('index');
 Route::post('request', 'CardReaderController@requestSessions')->name('request');
 Route::get('/get-health-center-code', 'CardReaderController@getHealthCenterCode');
 
+Route::post('/simulate-csrf-token-mismatch', function () {
+    abort(419, 'CSRF Token Mismatch');
+})->name('simulate');
+
+Route::get('/refresh-csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+
+

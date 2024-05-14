@@ -31,4 +31,12 @@ class Center extends Model
         }
         return null;
     }
+    public static function getCodeBySubnet($subnet)
+    {
+        $device = Device::where('subnet', $subnet)->first();
+        if ($device) {
+            return $device->center->code;
+        }
+        return null;
+    }
 }
