@@ -23,7 +23,6 @@ class CardReaderController extends Controller
     {
         $healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
         $healthCenterCode =file_get_contents($healthCenterCodePath);
-
         $backgroundImageUrl = $this-> backgroundImageUrl;
 
         return view('welcome', compact(

@@ -79,6 +79,7 @@ body {
   color: #212529;
   text-align: left;
   background-color: #f8fafc;
+  
   /* background-image: url("{{ asset('assets/img/portada.jpg') }}");
   background-repeat: no-repeat;
   background-size: cover; */
@@ -218,9 +219,12 @@ figure {
   margin: 0 0 1rem;
 }
 
+
 img {
   vertical-align: middle;
   border-style: none;
+  max-width: 100%;
+  height: auto;
 }
 
 svg {

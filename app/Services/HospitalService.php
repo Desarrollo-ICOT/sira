@@ -98,6 +98,7 @@ class HospitalService
     {
         $response = Http::get($this->get_url, [
             'centerCode' => $healthCenterCode,
+            'centerCode' => $healthCenterCode,
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {
@@ -109,11 +110,14 @@ class HospitalService
     private function processTreatmentSessions($sessions, $cardCode)
     {
         $now = Carbon::now();
+        $now = Carbon::now();
         foreach ($sessions['content']['treatments'] as $sessionData) {
             $sessionData['bandNumber'] = $cardCode;
             $sessionData['clinicalHistoryNumber'] = $sessions['content']['clinicalHistoryNumber'];
             $sessionData['name'] = $sessions['content']['patientFullName'];
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
+            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
             $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             if ($sessionDate->isToday()) {

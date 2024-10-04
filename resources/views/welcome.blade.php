@@ -16,17 +16,47 @@
                 background-repeat: no-repeat;
                 background-size: cover;
             }
+            body {
+                background-image: url("{{ $url }}");
+                background-repeat: no-repeat;
+                background-size: cover;
+            }
         </style>
+        <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
+        </div>
+        <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
         <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
         </div>
         <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
         </div>
 
+
         <div id="formContent" class="container">
             <div class="insideCard">
 
                 <div id="img1" class="img1">
+            <div class="insideCard">
+
+                <div id="img1" class="img1">
                     <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
+                </div>
+                <div id="img2" class="img2">
+                    <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
+                </div>
+                <div class="datetime">
+                    <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
+                    <div id="clock"></div>
+                </div>
+                <div id="patientLabel">
+                    <label id="patientCardLabel" class="data-label"></label>
+                </div>
+                <form id="readCardForm" method="GET">
+                    @csrf
+                    @method('GET')
+                    <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
+                        placeholder="Código Tarjeta">
+                    <br>
+                </form>
                 </div>
                 <div id="img2" class="img2">
                     <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
@@ -56,6 +86,7 @@
     $(document).ready(function() {
         startClock();
         $('#patientLabel').hide();
+        $('#patientLabel').hide();
         $('#messageAlert').hide();
         const form = document.getElementById('readCardForm');
         const cardCodeInput = document.getElementById('uid');
@@ -63,6 +94,12 @@
         const clock = document.getElementById('clock');
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
+        cardCodeInput.focus();
+
+        // var healthCenterCode = localStorage.getItem('healthCenterCode');
+        // console.log(healthCenterCode);
+        getClientIP(function(clientIP) {
+            console.log(clientIP);
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -226,6 +263,7 @@
     function startClock() {
         updateClock();
         setInterval(updateClock, 1000);
+        setInterval(updateClock, 1000);
     }
 
     function playNotificationSound($sound) {
@@ -238,6 +276,8 @@
         $('#uid').val('');
     }
 
+    function capitalizeFirstLetter(str) {
+        return str.replace(/\b\w/g, match => match.toUpperCase());
     function capitalizeFirstLetter(str) {
         return str.replace(/\b\w/g, match => match.toUpperCase());
     }
