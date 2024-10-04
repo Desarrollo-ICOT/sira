@@ -16,58 +16,27 @@
                 background-repeat: no-repeat;
                 background-size: cover;
             }
-            body {
-                background-image: url("{{ $url }}");
-                background-repeat: no-repeat;
-                background-size: cover;
-            }
         </style>
-        <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
-        </div>
-        <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
-        <div id="alertError" class="alert alert-danger" role="alert" style="display: none">
-        </div>
-        <div id="alertSuccess" class="alert alert-success" role="alert" style="display: none">
-        </div>
-
 
         <div id="formContent" class="container">
             <div class="insideCard">
 
-                <div id="img1" class="img1">
-            <div class="insideCard">
-
-                <div id="img1" class="img1">
+                <div class="img1">
                     <img src="{{ asset('assets/img/logo_icot_sombra.png') }}" id="logo" alt="icot logo" />
                 </div>
-                <div id="img2" class="img2">
+                <div class="img2">
                     <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
                 </div>
+
                 <div class="datetime">
                     <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
                     <div id="clock"></div>
                 </div>
+
                 <div id="patientLabel">
                     <label id="patientCardLabel" class="data-label"></label>
                 </div>
-                <form id="readCardForm" method="GET">
-                    @csrf
-                    @method('GET')
-                    <input id="uid" type="text" class="fadeIn second" name="uid" required autofocus
-                        placeholder="Código Tarjeta">
-                    <br>
-                </form>
-                </div>
-                <div id="img2" class="img2">
-                    <img src="{{ asset('assets/img/34aniversario_rojo.png') }}" id="aniversario" alt="icot aniversario" />
-                </div>
-                <div class="datetime">
-                    <p>{{ ucfirst(\Carbon\Carbon::now()->isoFormat('dddd, D [de] MMMM')) }}</p>
-                    <div id="clock"></div>
-                </div>
-                <div id="patientLabel">
-                    <label id="patientCardLabel" class="data-label"></label>
-                </div>
+
                 <form id="readCardForm" method="GET">
                     @csrf
                     @method('GET')
@@ -77,7 +46,6 @@
                 </form>
             </div>
         </div>
-
     </div>
 @endsection
 
@@ -85,21 +53,31 @@
 <script type="text/javascript">
     $(document).ready(function() {
         startClock();
+        updateNetworkStatus();
         $('#patientLabel').hide();
-        $('#patientLabel').hide();
-        $('#messageAlert').hide();
         const form = document.getElementById('readCardForm');
         const cardCodeInput = document.getElementById('uid');
-        const messageAlert = document.getElementById('messageAlert');
         const clock = document.getElementById('clock');
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
-        cardCodeInput.focus();
 
-        // var healthCenterCode = localStorage.getItem('healthCenterCode');
-        // console.log(healthCenterCode);
-        getClientIP(function(clientIP) {
-            console.log(clientIP);
+        // Add event listeners for online/offline
+        window.addEventListener('online', () => {
+            updateNetworkStatus();
+        });
+
+        window.addEventListener('offline', () => {
+            updateNetworkStatus();
+        });
+
+        function updateNetworkStatus() {
+            console.log(navigator);
+            const status = navigator.onLine ? 'Online' : 'Offline';
+            console.log(`Network status: ${status}`);
+            if (!navigator.onLine) {
+             handleOffline();
+            }
+        }
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -119,6 +97,7 @@
                     cardCodeInput.focus();
                 },
                 error: function(error) {
+                    console.log(error);
                     if (error.status === 419) {
                         // CSRF token mismatch error
                         refreshCsrfTokenAndRetry(form);
@@ -131,7 +110,8 @@
                     // Re-enable input field after setTimeout and clearing patient card label
                     setTimeout(function() {
                         clearPatientCardLabel();
-                        $('#uid').prop('disabled', false); // Re-enable input field
+                        $('#uid').prop('disabled',
+                            false); // Re-enable input field
                         cardCodeInput.focus();
                     }, 4000);
                     cardCodeInput.focus();
@@ -139,10 +119,12 @@
             });
         });
 
+        cardCodeInput.addEventListener('focus', updateNetworkStatus);
         document.addEventListener('click', function(event) {
             console.log('click on screen');
             // Check if the clicked element is not the input field
             if (event.target !== cardCodeInput) {
+                updateNetworkStatus();
                 cardCodeInput.focus();
             }
         });
@@ -151,6 +133,7 @@
             // Prevent default focus loss when clicking inside the input
             console.log('click on input')
             event.stopPropagation();
+
         });
 
     });
@@ -168,7 +151,7 @@
         if (response.success == true) {
             $('#patientCardLabel').text(response.patientName);
             $('#patientLabel').show();
-            playNotificationSound('/assets/sounds/success.mp3');
+            playNotificationSound('/assets/sounds/notification.mp3');
             // cardCodeInput.focus();
         } else {
             handleErrorResponse(response);
@@ -191,6 +174,23 @@
             $('#patientCardLabel').text(response.patientName);
             $('#patientLabel').show();
         }
+    }
+
+    // Function to handle offline scenario
+    function handleOffline() {
+        Swal.fire({
+            title: 'Sin Conexión',
+            text: 'El dispositivio no está conectado a una red',
+            icon: 'warning',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        window.addEventListener('online', function() {
+            console.log('You are back online!');
+            // Optionally refresh the page
+            location.reload();
+            
+        });
     }
 
     function refreshCsrfTokenAndRetry(form) {
@@ -239,18 +239,6 @@
             });
     }
 
-    // Function to get the client's public IP address
-    function getClientIP(callback) {
-        $.getJSON('https://api.ipify.org?format=json', function(data) {
-            callback(data.ip);
-        });
-    }
-
-    function timeOutAlert($alert, $message) {
-        $alert.text($message);
-        $alert.show().delay(10000).slideUp(300);
-    }
-
     function updateClock() {
         const now = new Date();
         const hours = now.getHours().toString().padStart(2, '0');
@@ -262,7 +250,6 @@
 
     function startClock() {
         updateClock();
-        setInterval(updateClock, 1000);
         setInterval(updateClock, 1000);
     }
 
@@ -276,8 +263,6 @@
         $('#uid').val('');
     }
 
-    function capitalizeFirstLetter(str) {
-        return str.replace(/\b\w/g, match => match.toUpperCase());
     function capitalizeFirstLetter(str) {
         return str.replace(/\b\w/g, match => match.toUpperCase());
     }

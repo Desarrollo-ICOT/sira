@@ -54,13 +54,16 @@ class HospitalService
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
-        $deviceIP = $this->getClientIP($request);
-        if  ($deviceIP == "192.168.7.211"){
-        $centerCode = "ESCA";          
-        } else {
-          $subnet = $this -> getClientSubnet($deviceIP);
-          $centerCode = Center::getCodeBySubnet($subnet);
-        }  
+        $centerCode = "TFE1";
+        //TODO descomentar esto y quitar la linea $centerCode de encima
+        // $deviceIP = $this->getClientIP($request);
+        // if ($deviceIP == env('ESCA_INSU_IP')) 
+        // {
+        //     $centerCode = "ESCA";
+        // } else {
+        //     $subnet = $this->getClientSubnet($deviceIP);
+        //     $centerCode = "ESCA";
+        // }
 
         Log::channel('paco')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
         $sessions = $this->fetchTreatmentSessions($cardCode, $centerCode);
@@ -78,26 +81,16 @@ class HospitalService
                 'centerCode' => $centerCode
             ];
             if (isset($sessions['content']['pacienteNombre']['patientFullName'])) {
-                $data['patientName'] =  $sessions['content']['pacienteNombre']['patientFullName'];
+                $data['patientName'] = $sessions['content']['pacienteNombre']['patientFullName'];
             }
-            throw new ApiException($data,  $sessions['httpCode']);
+            throw new ApiException($data, $sessions['httpCode']);
         }
         return $this->processTreatmentSessions($sessions, $cardCode);
     }
 
-
-
-
-
-
-
-
-
-
     private function fetchTreatmentSessions($cardCode, $healthCenterCode)
     {
         $response = Http::get($this->get_url, [
-            'centerCode' => $healthCenterCode,
             'centerCode' => $healthCenterCode,
             'bandNumber' => $cardCode
         ]);
@@ -110,15 +103,14 @@ class HospitalService
     private function processTreatmentSessions($sessions, $cardCode)
     {
         $now = Carbon::now();
-        $now = Carbon::now();
         foreach ($sessions['content']['treatments'] as $sessionData) {
             $sessionData['bandNumber'] = $cardCode;
             $sessionData['clinicalHistoryNumber'] = $sessions['content']['clinicalHistoryNumber'];
             $sessionData['name'] = $sessions['content']['patientFullName'];
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
-            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $startDate = $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
             $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
-            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $startDate = $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
             $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             if ($sessionDate->isToday()) {
                 if (!$sessionData['sessions'][0]['started']) {
@@ -165,7 +157,7 @@ class HospitalService
             ],
             "control" => [
                 "idMessage" => "",
-                "idTypeMessage" =>  env('IDTYPEMESSAGE'),
+                "idTypeMessage" => env('IDTYPEMESSAGE'),
                 "idTypeEvent" => env('IDTYPEEVENT'),
                 "action" => env('ACTION'),
                 "type" => env('TYPE'),
@@ -187,7 +179,6 @@ class HospitalService
         $response = Http::post($this->post_url, $data);
         if (!$response->successful()) {
             throw new ApiException('Fallo al ' . strtolower($successMessage) . ': ' . $response, 500);
-            exec('/assets/sounds/error.mp3');
         } else if (!empty($response['error'])) {
             $messageText = $response['content']['errors'][0]['message'];
             $message = substr($messageText, strpos($messageText, '-') + 2);
@@ -198,8 +189,7 @@ class HospitalService
                 'code' => $code,
                 'patientName' => $patientName
             ];
-            throw new ApiException($data,  $response['httpCode']);
-            exec('/assets/sounds/error.mp3');
+            throw new ApiException($data, $response['httpCode']);
         }
         $sessionData = [
             'message' => $successMessage,
