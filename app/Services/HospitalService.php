@@ -6,6 +6,9 @@ use App\Exceptions\ApiException;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\Center;
+use Illuminate\Support\Facades\Log;
 
 class HospitalService
 {
@@ -22,34 +25,79 @@ class HospitalService
         $this->get_url = env('GET_ENDPOINT');
         $this->post_url = env('POST_ENDPOINT');
         $this->healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
-        $this->code =file_get_contents($this->healthCenterCodePath) ;
-        $this->healthCenterCode =trim($this->code) ;
+        $this->code = file_get_contents($this->healthCenterCodePath);
+        $this->healthCenterCode = trim($this->code);
         $this->backgroundImageUrl = asset("assets/img/{$this->healthCenterCode}.jpg");
-
     }
 
-    public function getImageUrl(){
+    public function getImageUrl()
+    {
         return $this->backgroundImageUrl;
+    }
+
+    public function getClientIP(Request $request)
+    {
+        $clientIp = $request->ip();
+        Log::channel('paco')->info(' ');
+        Log::channel('paco')->info('Client IP Address: ' . $clientIp);
+        return $clientIp;
+    }
+
+    public function getClientSubnet($clientIp)
+    {
+        $octets = explode('.', $clientIp);
+        $subnet = $octets[2];
+        Log::channel('paco')->info('Client Subnet: ' . $subnet);
+        return $subnet;
     }
 
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
-        // $centerCode = env('CENTER_CODE');
-        $sessions = $this->fetchTreatmentSessions($cardCode);
+        $deviceIP = $this->getClientIP($request);
+        if  ($deviceIP == "192.168.7.211"){
+        $centerCode = "ESCA";          
+        } else {
+          $subnet = $this -> getClientSubnet($deviceIP);
+          $centerCode = Center::getCodeBySubnet($subnet);
+        }  
+
+        Log::channel('paco')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
+        $sessions = $this->fetchTreatmentSessions($cardCode, $centerCode);
         if (empty($sessions)) {
+            Log::channel('paco')->info(env('NO_TREATMENT'));
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {
-            $message = $sessions['content']['errors'][0]['message'];
-            throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
+            $messageText = $sessions['content']['errors'][0]['message'];
+            $message = substr($messageText, strpos($messageText, '-') + 2);
+            $code = substr($messageText, 0, 3);
+            $data = [
+                'message' => $message,
+                'code' => $code,
+                'cardCode' => $cardCode,
+                'centerCode' => $centerCode
+            ];
+            if (isset($sessions['content']['pacienteNombre']['patientFullName'])) {
+                $data['patientName'] =  $sessions['content']['pacienteNombre']['patientFullName'];
+            }
+            throw new ApiException($data,  $sessions['httpCode']);
         }
         return $this->processTreatmentSessions($sessions, $cardCode);
     }
 
-    private function fetchTreatmentSessions($cardCode)
+
+
+
+
+
+
+
+
+
+    private function fetchTreatmentSessions($cardCode, $healthCenterCode)
     {
         $response = Http::get($this->get_url, [
-            'centerCode' => $this->healthCenterCode,
+            'centerCode' => $healthCenterCode,
             'bandNumber' => $cardCode
         ]);
         if (!$response->successful()) {
@@ -60,31 +108,24 @@ class HospitalService
 
     private function processTreatmentSessions($sessions, $cardCode)
     {
-        $now = Carbon::now()->setTimezone("EET");
+        $now = Carbon::now();
         foreach ($sessions['content']['treatments'] as $sessionData) {
             $sessionData['bandNumber'] = $cardCode;
             $sessionData['clinicalHistoryNumber'] = $sessions['content']['clinicalHistoryNumber'];
             $sessionData['name'] = $sessions['content']['patientFullName'];
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
-            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00O');
-
+            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             if ($sessionDate->isToday()) {
                 if (!$sessionData['sessions'][0]['started']) {
+                    Log::channel('paco')->info(env('STARTED'));
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
-                    // $sessionDate->setTimezone("EET");
-                    $currentDatetime = Carbon:: now();
-                    $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00O');
-                    // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
-                    $timeDifference = $currentDatetime->diffInMinutes($timeToCheck);
-                    if ($timeDifference < 15) {
-                        throw new ApiException(env('TIME_ERROR'), 404);
-                        // return response()->custom(true, env('TIME_ERROR'), 404, 'danger', $sessionData);
-                    } else {
-                        $response = $this->markSessionAs($sessionData, env('STATE_DONE'));
-                    }
+                    Log::channel('paco')->info(env('DONE'));
+                    $response = $this->markSessionAs($sessionData, env('STATE_DONE'));
                 }
             } else {
+                Log::channel('paco')->info(env('NO_SESSIONS'));
                 return response()->custom(true, env('NO_SESSIONS'), 404, 'warning', $sessionData);
             }
         }
@@ -133,6 +174,7 @@ class HospitalService
                 "destination" => env('DESTINATION'),
             ],
         ];
+        // Log::channel('paco')->info($state == env('STATE_DONE') ? env('DONE') : env('STARTED'));
         return $this->sendSessionRequest($state == env('STATE_DONE') ? env('DONE') : env('STARTED'), $data);
     }
 
@@ -142,11 +184,24 @@ class HospitalService
         if (!$response->successful()) {
             throw new ApiException('Fallo al ' . strtolower($successMessage) . ': ' . $response, 500);
             exec('/assets/sounds/error.mp3');
-        } else if (!empty($sessions['error'])) {
-            $message = $sessions['content']['errors'][0]['message'];
-            throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
+        } else if (!empty($response['error'])) {
+            $messageText = $response['content']['errors'][0]['message'];
+            $message = substr($messageText, strpos($messageText, '-') + 2);
+            $code = substr($messageText, 0, 3);
+            $patientName = $response['content']['pacienteNombre']['patientFullName'];
+            $data = [
+                'message' => $message,
+                'code' => $code,
+                'patientName' => $patientName
+            ];
+            throw new ApiException($data,  $response['httpCode']);
             exec('/assets/sounds/error.mp3');
         }
-        return response()->custom(true, $successMessage, 200, 'success', $data);
+        $sessionData = [
+            'message' => $successMessage,
+            'patientName' => $data['patient']['name']
+
+        ];
+        return response()->custom(true, $sessionData, 200, 'success');
     }
 }

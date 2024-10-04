@@ -4,6 +4,7 @@ function preloadImage(url) {
     const img = new Image();
     img.src = url;
 }
+const messageAlert = document.getElementById('messageAlert');
 
 fetch('/get-health-center-code') 
     .then(response => {
@@ -19,5 +20,10 @@ fetch('/get-health-center-code')
         preloadImage(imageUrl);
     })
     .catch(error => {
+        if (messageAlert) {
+            messageAlert.innerText = error.message; // Display the error message
+            messageAlert.classList.add('alert-error'); // Optionally, add a CSS class for styling
+            messageAlert.style.display = 'block'; // Show the 'messageAlert' div
+        }
         console.error('Error fetching health center code:', error);
     });
