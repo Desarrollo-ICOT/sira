@@ -1,0 +1,22 @@
+{
+    "name": "SIRA",
+    "short_name": "SIRA",
+    "description": "Sistema de Registro de Acceso de Pacientes",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#bc012e",
+    "icons": [
+      {
+        "src": "/assets/icons/sira_192x358.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/assets/icons/sira_512x366.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  

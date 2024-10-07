@@ -54,16 +54,13 @@ class HospitalService
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
-        $centerCode = "TFE1";
-        //TODO descomentar esto y quitar la linea $centerCode de encima
-        // $deviceIP = $this->getClientIP($request);
-        // if ($deviceIP == env('ESCA_INSU_IP')) 
-        // {
-        //     $centerCode = "ESCA";
-        // } else {
-        //     $subnet = $this->getClientSubnet($deviceIP);
-        //     $centerCode = "ESCA";
-        // }
+        $deviceIP = $this->getClientIP($request);
+        if ($deviceIP == env('ESCA_INSU_IP')) {
+            $centerCode = "ESCA";
+        } else {
+            $subnet = $this->getClientSubnet($deviceIP);
+            $centerCode = Center::getCodeBySubnet($subnet);
+        }
 
         Log::channel('paco')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
         $sessions = $this->fetchTreatmentSessions($cardCode, $centerCode);

@@ -44,22 +44,6 @@
         color: #0d0d0d;
     }
 
-    #messageAlert {
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 3vw;
-        /* display: none;
-        padding: 30px; */
-        text-transform: uppercase;
-    }
-
     a {
         color: #92badd;
         display: inline-block;
@@ -459,51 +443,6 @@
         width: 20%;
     }
 
-    .alert {
-        height: 90px;
-        width: 360px;
-        font-size: 2.5vw;
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        text-transform: uppercase;
-
-    }
-
-    .alert-success {
-        color: whitesmoke;
-        background-color: green;
-        border-color: #c7eed8;
-    }
-
-    .alert-success hr {
-        border-top-color: #b3e8ca;
-    }
-
-    .alert-success .alert-link {
-        color: #123c24;
-    }
-
-    .alert-danger {
-        color: whitesmoke;
-        background-color: red;
-        border-color: #f7c6c5;
-    }
-
-    .alert-danger hr {
-        border-top-color: #f4b0af;
-    }
-
-    .alert-danger .alert-link {
-        color: #4c110f;
-    }
-
     #clock {
         margin-bottom: 25px;
     }
@@ -553,14 +492,7 @@
         height: 24px;
         margin-right: 8px;
     }
-    
-    .alert i {
-        float: left;
-        font-size: 64px;
-        margin-right: 32px;
-        margin-left: 16px;
-        color: white;
-    }
+
 }
 
 @media screen and (min-width: 1080px) and (max-width: 2600px) {
@@ -609,22 +541,6 @@
         color: #0d0d0d;
     }
 
-    #messageAlert {
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 3vw;
-        /* display: none;
-        padding: 30px; */
-        text-transform: uppercase;
-    }
-
     a {
         color: #92badd;
         display: inline-block;
@@ -1024,51 +940,6 @@
         width: 20%;
     }
 
-    .alert {
-        height: 90px;
-        width: 360px;
-        font-size: 2.5vw;
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        text-transform: uppercase;
-
-    }
-
-    .alert-success {
-        color: whitesmoke;
-        background-color: green;
-        border-color: #c7eed8;
-    }
-
-    .alert-success hr {
-        border-top-color: #b3e8ca;
-    }
-
-    .alert-success .alert-link {
-        color: #123c24;
-    }
-
-    .alert-danger {
-        color: whitesmoke;
-        background-color: red;
-        border-color: #f7c6c5;
-    }
-
-    .alert-danger hr {
-        border-top-color: #f4b0af;
-    }
-
-    .alert-danger .alert-link {
-        color: #4c110f;
-    }
-
     #clock {
         margin-bottom: 25px;
     }
@@ -1118,17 +989,48 @@
         height: 24px;
         margin-right: 8px;
     }
-    
-    .alert i {
-        float: left;
-        font-size: 64px;
-        margin-right: 32px;
-        margin-left: 16px;
-        color: white;
-    }
 }
 
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 14px; /* Ajustar el tamaño de fuente para pantallas más pequeñas */
+        padding: 10px;   /* Añadir relleno para una mejor usabilidad móvil */
+    }
 
+    .row {
+        flex-direction: column; /* Apilar columnas verticalmente */
+        padding-top: 20px;     /* Reducir relleno superior */
+        align-items: center;    /* Centrar elementos horizontalmente */
+    }
 
-/* 
- */
+    .column {
+        flex: 100%;             /* Hacer que las columnas ocupen todo el ancho */
+        padding: 10px;          /* Ajustar el relleno para móviles */
+        height: auto;           /* Permitir que la altura sea automática */
+        display: flex;          /* Usar flexbox para centrar contenido */
+        justify-content: center; /* Centrar contenido horizontalmente */
+        align-items: center;    /* Centrar contenido verticalmente */
+    }
+
+    #clock {
+        font-size: 18px;       /* Tamaño de fuente del reloj */
+        margin-bottom: 10px;   /* Espacio debajo del reloj */
+    }
+
+    input[type=text],
+    input[type=password] {
+        font-size: 16px;       /* Ajustar tamaño de fuente del input */
+        padding: 10px;         /* Ajustar relleno del input */
+        width: 100%;           /* Input a todo ancho */
+        border-radius: 10px;   /* Bordes redondeados */
+        border: 2px solid #f6f6f6; /* Borde del input */
+        transition: all 0.5s ease-in-out; /* Transición suave */
+    }
+
+    input[type=text]:focus {
+        background-color: #fff; /* Cambiar color de fondo al hacer foco */
+        border: 2px solid grey;  /* Borde al hacer foco */
+    }
+
+    /* Otros estilos específicos para móviles */
+}

@@ -61,7 +61,6 @@
         const formContent = document.querySelector('#formContent');
         cardCodeInput.focus();
 
-        // Add event listeners for online/offline
         window.addEventListener('online', () => {
             updateNetworkStatus();
         });
@@ -75,7 +74,7 @@
             const status = navigator.onLine ? 'Online' : 'Offline';
             console.log(`Network status: ${status}`);
             if (!navigator.onLine) {
-             handleOffline();
+                handleOffline();
             }
         }
 
@@ -107,11 +106,10 @@
                     }
                 },
                 complete: function() {
-                    // Re-enable input field after setTimeout and clearing patient card label
                     setTimeout(function() {
                         clearPatientCardLabel();
                         $('#uid').prop('disabled',
-                            false); // Re-enable input field
+                            false); 
                         cardCodeInput.focus();
                     }, 4000);
                     cardCodeInput.focus();
@@ -122,7 +120,6 @@
         cardCodeInput.addEventListener('focus', updateNetworkStatus);
         document.addEventListener('click', function(event) {
             console.log('click on screen');
-            // Check if the clicked element is not the input field
             if (event.target !== cardCodeInput) {
                 updateNetworkStatus();
                 cardCodeInput.focus();
@@ -152,10 +149,8 @@
             $('#patientCardLabel').text(response.patientName);
             $('#patientLabel').show();
             playNotificationSound('/assets/sounds/notification.mp3');
-            // cardCodeInput.focus();
         } else {
             handleErrorResponse(response);
-            // cardCodeInput.focus();
         }
     }
 
@@ -176,7 +171,7 @@
         }
     }
 
-    // Function to handle offline scenario
+    // Function to handle offline status
     function handleOffline() {
         Swal.fire({
             title: 'Sin Conexión',
@@ -185,18 +180,17 @@
             timer: 3000,
             showConfirmButton: false
         });
+        playNotificationSound('/assets/sounds/error.mp3');
         window.addEventListener('online', function() {
             console.log('You are back online!');
-            // Optionally refresh the page
             location.reload();
-            
+
         });
     }
 
     function refreshCsrfTokenAndRetry(form) {
         refreshCsrfToken()
             .then(function() {
-                // Retry original AJAX request after token refresh
                 $.ajax(form.submit());
             })
             .catch(function(error) {
@@ -211,7 +205,6 @@
                 });
             });
     }
-
 
     function refreshCsrfToken() {
         return new Promise((resolve, reject) => {

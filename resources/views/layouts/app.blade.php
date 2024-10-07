@@ -7,45 +7,45 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-                    @if (session('success'))
+            @if (session('success'))
 
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            didOpen: (toast) => {
-                                toast.addEventListener('mouseenter', Swal.stopTimer)
-                                toast.addEventListener('mouseleave', Swal.resumeTimer)
-                            }
-                        });
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
 
-                        Toast.fire({
-                            icon: 'success',
-                            title: '{{ session('success') }}'
-                        });
-                    @endif
+                Toast.fire({
+                    icon: 'success',
+                    title: '{{ session('success') }}'
+                });
+            @endif
 
-                    @if (session('error'))
+            @if (session('error'))
 
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            didOpen: (toast) => {
-                                toast.addEventListener('mouseenter', Swal.stopTimer)
-                                toast.addEventListener('mouseleave', Swal.resumeTimer)
-                            }
-                        });
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
 
-                        Toast.fire({
-                            icon: 'error',
-                            title: '{{ session('error') }}'
-                        });
-                    @endif
+                Toast.fire({
+                    icon: 'error',
+                    title: '{{ session('error') }}'
+                });
+            @endif
         });
     </script>
     <!-- Fonts -->
@@ -56,6 +56,9 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
+
+    {{-- Manifest --}}
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
 
     <title>SIRA</title>
 
