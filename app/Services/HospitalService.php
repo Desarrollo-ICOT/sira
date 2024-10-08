@@ -80,6 +80,11 @@ class HospitalService
             if (isset($sessions['content']['pacienteNombre']['patientFullName'])) {
                 $data['patientName'] = $sessions['content']['pacienteNombre']['patientFullName'];
             }
+
+            if($centerCode && $cardCode){
+                Log::channel('error')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
+
+            }
             throw new ApiException($data, $sessions['httpCode']);
         }
         return $this->processTreatmentSessions($sessions, $cardCode);

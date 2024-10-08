@@ -11,7 +11,7 @@ class ErrorHandler
 {
     public static function handle(Exception $e)
     {
-        Log::channel('paco')->error($e->getMessage());
+        Log::channel('error')->error($e->getMessage());
     
         if ($e instanceof ApiException) {
             // Play the error sound
