@@ -10,6 +10,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\Center;
 use Illuminate\Support\Facades\Log;
 
+
 class HospitalService
 {
 
@@ -25,47 +26,30 @@ class HospitalService
         $this->get_url = env('GET_ENDPOINT');
         $this->post_url = env('POST_ENDPOINT');
         $this->healthCenterCodePath = env('HEALTH_CENTER_CODE_PATH');
-        $this->code = file_get_contents($this->healthCenterCodePath);
-        $this->healthCenterCode = trim($this->code);
+        $this->code =file_get_contents($this->healthCenterCodePath) ;
+        $this->healthCenterCode =trim($this->code) ;
         $this->backgroundImageUrl = asset("assets/img/{$this->healthCenterCode}.jpg");
+
     }
 
-    public function getImageUrl()
-    {
+    public function getImageUrl(){
         return $this->backgroundImageUrl;
     }
 
-    public function getClientIP(Request $request)
-    {
+    public function getClientIP(Request $request){
         $clientIp = $request->ip();
-        Log::channel('paco')->info(' ');
         Log::channel('paco')->info('Client IP Address: ' . $clientIp);
         return $clientIp;
-    }
-
-    public function getClientSubnet($clientIp)
-    {
-        $octets = explode('.', $clientIp);
-        $subnet = $octets[2];
-        Log::channel('paco')->info('Client Subnet: ' . $subnet);
-        return $subnet;
     }
 
     public function getTreatmentSessions(Request $request)
     {
         $cardCode = $request->input('uid');
         $deviceIP = $this->getClientIP($request);
-        if ($deviceIP == env('ESCA_INSU_IP')) {
-            $centerCode = "ESCA";
-        } else {
-            $subnet = $this->getClientSubnet($deviceIP);
-            $centerCode = Center::getCodeBySubnet($subnet);
-        }
-
-        Log::channel('paco')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
+        $centerCode =Center::getCodeByDevicePrivateIP($deviceIP);
+        Log::channel('paco')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: '.$cardCode);
         $sessions = $this->fetchTreatmentSessions($cardCode, $centerCode);
         if (empty($sessions)) {
-            Log::channel('paco')->info(env('NO_TREATMENT'));
             return response()->custom(false, env('NO_TREATMENT'), 404, 'danger');
         } else if (!empty($sessions['error'])) {
             $messageText = $sessions['content']['errors'][0]['message'];
@@ -76,19 +60,15 @@ class HospitalService
                 'code' => $code,
                 'cardCode' => $cardCode,
                 'centerCode' => $centerCode
-            ];
-            if (isset($sessions['content']['pacienteNombre']['patientFullName'])) {
-                $data['patientName'] = $sessions['content']['pacienteNombre']['patientFullName'];
+            ]; 
+            if(isset($sessions['content']['pacienteNombre']['patientFullName'])){
+                $data ['patientName'] =  $sessions['content']['pacienteNombre']['patientFullName'];
             }
-
-            if($centerCode && $cardCode){
-                Log::channel('error')->info('Health Center Code: ' . $centerCode . ' --- Tarjeta de Paciente: ' . $cardCode);
-
-            }
-            throw new ApiException($data, $sessions['httpCode']);
+            throw new ApiException($data,  $sessions['httpCode']);
         }
         return $this->processTreatmentSessions($sessions, $cardCode);
     }
+    
 
     private function fetchTreatmentSessions($cardCode, $healthCenterCode)
     {
@@ -110,20 +90,30 @@ class HospitalService
             $sessionData['clinicalHistoryNumber'] = $sessions['content']['clinicalHistoryNumber'];
             $sessionData['name'] = $sessions['content']['patientFullName'];
             $sessionDate = Carbon::createFromTimestampMs($sessionData['sessions'][0]['startDate']);
-            $startDate = $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
-            $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
-            $startDate = $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
+            $startDate= $sessionData['sessions'][0]['startDatePaco']['startDatePaco'];
             $sessionData['sessions'][0]['currentDate'] = $now->format('Y-m-d\TH:i:00');
             if ($sessionDate->isToday()) {
                 if (!$sessionData['sessions'][0]['started']) {
-                    Log::channel('paco')->info(env('STARTED'));
                     $response = $this->markSessionAs($sessionData, env('STATE_INPROGRESS'));
                 } else {
-                    Log::channel('paco')->info(env('DONE'));
                     $response = $this->markSessionAs($sessionData, env('STATE_DONE'));
+                    // // $sessionDate->setTimezone("EET");
+                    // $currentDatetime = Carbon:: now();
+                    // // $timeToCheck = $sessionDate->format('Y-m-d\TH:i:00');
+                    // // $timeToCheck = $sessionData['sessions'][0]['currentDate'];;
+                    // $timeDifference = $currentDatetime->diffInMinutes($startDate);
+                    // if ($timeDifference < 15) {
+                    //     $data = [
+                    //         'message' => env('TIME_ERROR'),
+                    //         'patientName' =>$sessions['content']['patientFullName']
+                    //     ]; 
+                    //     throw new ApiException($data, 404);
+                    //     // return response()->custom(true, env('TIME_ERROR'), 404, 'danger', $sessionData);
+                    // } else {
+                    //     $response = $this->markSessionAs($sessionData, env('STATE_DONE'));
+                    // }
                 }
             } else {
-                Log::channel('paco')->info(env('NO_SESSIONS'));
                 return response()->custom(true, env('NO_SESSIONS'), 404, 'warning', $sessionData);
             }
         }
@@ -159,7 +149,7 @@ class HospitalService
             ],
             "control" => [
                 "idMessage" => "",
-                "idTypeMessage" => env('IDTYPEMESSAGE'),
+                "idTypeMessage" =>  env('IDTYPEMESSAGE'),
                 "idTypeEvent" => env('IDTYPEEVENT'),
                 "action" => env('ACTION'),
                 "type" => env('TYPE'),
@@ -172,7 +162,6 @@ class HospitalService
                 "destination" => env('DESTINATION'),
             ],
         ];
-        // Log::channel('paco')->info($state == env('STATE_DONE') ? env('DONE') : env('STARTED'));
         return $this->sendSessionRequest($state == env('STATE_DONE') ? env('DONE') : env('STARTED'), $data);
     }
 
@@ -181,20 +170,24 @@ class HospitalService
         $response = Http::post($this->post_url, $data);
         if (!$response->successful()) {
             throw new ApiException('Fallo al ' . strtolower($successMessage) . ': ' . $response, 500);
-        } else if (!empty($response['error'])) {
-            $messageText = $response['content']['errors'][0]['message'];
+            exec('/assets/sounds/error.mp3');
+        } else if (!empty($sessions['error'])) {
+            $messageText = $sessions['content']['errors'][0]['message'];
             $message = substr($messageText, strpos($messageText, '-') + 2);
             $code = substr($messageText, 0, 3);
-            $patientName = $response['content']['pacienteNombre']['patientFullName'];
+            $patientName = $sessions['content']['pacienteNombre']['patientFullName']; 
             $data = [
                 'message' => $message,
                 'code' => $code,
                 'patientName' => $patientName
-            ];
-            throw new ApiException($data, $response['httpCode']);
+            ]; 
+            throw new ApiException($data,  $sessions['httpCode']);
+            // $message = $sessions['content']['errors'][0]['message'];
+            // throw new ApiException(substr($message, strpos($message, '-') + 2), $sessions['httpCode']);
+            exec('/assets/sounds/error.mp3');
         }
-        $sessionData = [
-            'message' => $successMessage,
+        $sessionData =[
+            'message'=> $successMessage,
             'patientName' => $data['patient']['name']
 
         ];

@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Device extends Model
 {
     use HasFactory;
-    protected $fillable = ['ip'];
+    protected $fillable = [
+        'ip',
+        'ipprivada'
+    ];
 
     public function center()
     {

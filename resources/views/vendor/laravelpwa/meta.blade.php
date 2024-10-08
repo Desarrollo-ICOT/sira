@@ -32,6 +32,7 @@
 
 <script type="text/javascript">
     // Initialize the service worker
+    console.log('serviceworker');
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/serviceworker.js', {
             scope: '.'
